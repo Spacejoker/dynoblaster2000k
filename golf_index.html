@@ -312,7 +312,6 @@ const collides = ([x,y], [x2, y2]) => {
   const maxX = Math.ceil(x/40);
   const minY = Math.floor(y/40);
   const maxY = Math.ceil(y/40);
-  console.log('minx', minX, maxX, minY, maxY);
   for(let x = minX; x <= maxX; x++) {
     for(let y = minY; y <= maxY; y++) {
       if (x == x2 && y == y2) {

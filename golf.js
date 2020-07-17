@@ -1,15 +1,11 @@
-class Player {
-  constructor(x, y,playerid) {
-    this.x = x;
-    this.y = y;
-    this.maxbomb = 1;
-    this.r = 2;
-    this.playerid=playerid;
-  }
-  pos() {
-    return [this.x, this.y];
-  }
-}
+class Player{constructor(x, y,playerid){this.x=x
+this.y=y
+this.m=1
+this.r=2
+this.playerid=playerid
+this.lastframe=0
+this.timer=0;
+}pos=()=>[this.x, this.y]}
 Ib=new Image();
 Ib.src='img/bomb.png';
 Ip1=new Image();
@@ -22,6 +18,8 @@ bombPowerup=new Image();
 bombPowerup.src='img/bomb_powerup.png';
 rangePowerup=new Image();
 rangePowerup.src='img/range_powerup.png';
+spritesheet = new Image();
+spritesheet.src='img/playersprite.png';
 
 lastTick = 0;
 winningPlayer=undefined;
@@ -98,15 +96,24 @@ const checkItems = () => {
   for (const player of P) {
     for (let i = 0; i < rangePowerups.length; i++) {
       const p = rangePowerups[i];
-      if (collides([player.x, player.y], p)) {
+      if (collides(player, p)) {
         rangePowerups.splice(i, 1);
         if (p[2] == 1) {
           player.r += 1;
         } else {
-          player.maxbomb += 1;
+          player.m += 1;
         }
       }
     }
+  }
+  for (const b of bombs) {
+    free = true;
+    for (const p of P) {
+      if (collides(p, b)) {
+        free = false;
+      }
+    }
+    if(free)b[5] = false;
   }
 };
 
@@ -123,7 +130,7 @@ case r:q.dir=2;break
 case d:q.dir=3;break
 case l:q.dir=4;break
 case space:curbombs=bombs.filter(b=>b[4]==p).length
-if(curbombs<q.maxbomb)bombs.push([align(q.x)/40, align(q.y)/40, Date.now()+2000, q.r, p])}})
+if(curbombs<q.m)bombs.push([align(q.x)/40, align(q.y)/40, Date.now()+2000, q.r, p, true])}})
 ae('keyup',e=>{c=P[p].dir
 switch(e.code){case u:P[p].dir=c==1?0:c;break
 case r:P[p].dir=c==2?0:c;break
@@ -132,32 +139,60 @@ case l:P[p].dir=c==4?0:c;break}})}
 addListener( 'ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'Space', 0);
 addListener( 'KeyW', 'KeyD', 'KeyS', 'KeyA', 'Backquote', 1);
 
-const draw=()=>{
-  C.fillStyle='#FFF';
-  C.fillRect(0,0,600,520);
-  C.fillStyle='#bbb';
-  for (x = 0; x < 15; x++){
-    for (y = 0; y < 13; y++) {
-      if (B[y][x] === '#') {
-        paintSquare(x*40, y*40, '#bbb');
-      } else if (B[y][x] === 'x') {
-        paintSquare(x*40, y*40, '#cfa');
-      } else {
-        paintSquare(x*40, y*40, '#0b0');
-      }
+const Dr=()=>{
+C.fillStyle='#FFF';
+C.fillRect(0,0,600,520);
+C.fillStyle='#bbb';
+for (x = 0; x < 15; x++){
+for (y = 0; y < 13; y++) {
+if (B[y][x] === '#') {
+paintSquare(x*40, y*40, '#bbb');
+} else if (B[y][x] === 'x') {
+paintSquare(x*40, y*40, '#cfa');
+} else {
+paintSquare(x*40, y*40, '#0b0');
+}
+}
+}
+
+getSprite=(p) => {
+  const d = p.dir;
+  frame={
+    0:-1,
+    1:9,
+    2:3,
+    3:0,
+    4:6,
+  }[d];
+
+  let renderFrame = p.lastframe;
+  if (frame >= 0) {
+    if (p.lastframe != frame) {
+      p.timer = Date.now();
     }
-  }
-  drawItems(bombs);
-  for (const p of P) {
-    if (p.dead !== true) {
-      C.drawImage(Ip1, p.x, p.y);
-    }
-  }
-  if (winningPlayer) {
-    C.fillStyle='#000';
-    C.font = '48px serif';
-    C.fillText(`Player ${winningPlayer} won!`, 160, 250);
-  }
+    p.lastframe = frame;
+    delta = (((Date.now() - p.timer)/200)%4);
+    delta = {0:0,1:1,2:0,3:2}[delta|0]
+    console.log('delta', delta);
+    renderFrame = p.lastframe + delta
+
+    console.log(renderFrame);
+  } 
+  return [p.playerid-1,renderFrame|0]
+};
+
+drawItems(bombs);
+for (const p of P) {
+if (p.dead !== true) {
+  [sx, sy] = getSprite(p);
+  C.drawImage(spritesheet, sx*24, sy*24, 24, 24, p.x, p.y, 40, 40);
+}
+}
+if (winningPlayer) {
+C.fillStyle='#000';
+C.font = '48px serif';
+C.fillText(`Player ${winningPlayer} won!`, 160, 250);
+}
 };
 
 const drawItems = (bombs)  => {
@@ -173,21 +208,21 @@ const drawItems = (bombs)  => {
   for (const  c of crosses) {
     C.drawImage(crossImg, c[0]*40, c[1]*40);
   }
-  for (const rp of rangePowerups) {
-    //if (B[rp[1]][rp[0]] == '.') {
-    if (rp[2] == 1) {
-      C.drawImage(rangePowerup, rp[0]*40, rp[1]*40);
-    } else {
-      C.drawImage(bombPowerup, rp[0]*40, rp[1]*40);
-    }
-    //}
-  }
+for (const rp of rangePowerups) {
+if (B[rp[1]][rp[0]] == '.') {
+if (rp[2] == 1) {
+C.drawImage(rangePowerup, rp[0]*40, rp[1]*40);
+} else {
+C.drawImage(bombPowerup, rp[0]*40, rp[1]*40);
+}
+}
+}
 };
 
-const collides = ([x,y], [x2, y2]) => {
-  const minX = M.floor(x/40);
+const collides = (player, [x2, y2]) => {
+  const minX = M.floor((x=player.x)/40);
   const maxX = M.ceil(x/40);
-  const minY = M.floor(y/40);
+  const minY = M.floor((y=player.y)/40);
   const maxY = M.ceil(y/40);
   for(let x = minX; x <= maxX; x++) {
     for(let y = minY; y <= maxY; y++) {
@@ -199,7 +234,8 @@ const collides = ([x,y], [x2, y2]) => {
   return false;
 }
 
-const overlapsBlock = ([x, y], blockingKeys = '#x') => {
+const overlapsBlock = ([x, y], p) => {
+  blockingKeys = '#x'
   const minX = (M=Math).floor(x/40);
   const maxX = M.ceil(x/40);
   const minY = M.floor(y/40);
@@ -209,6 +245,11 @@ const overlapsBlock = ([x, y], blockingKeys = '#x') => {
       if(blockingKeys.indexOf(B[y][x]) >= 0) {
         return true;
       }
+      for (const b of bombs) {
+        if (b[0] == x && b[1] == y && !b[5]) {
+          return true;
+        }
+      }
     } 
   }
   return false;
@@ -216,11 +257,11 @@ const overlapsBlock = ([x, y], blockingKeys = '#x') => {
 
 const updatePlayer = (player) => {
   let tmpPos = [player.x, player.y];
-  if(player.dir == 1) { tmpPos[1] -= 4; }
-  if(player.dir == 2) { tmpPos[0] += 4; }
-  if(player.dir == 3) { tmpPos[1] += 4; }
-  if(player.dir == 4) { tmpPos[0] -= 4; }
-  if (!overlapsBlock(tmpPos)) {
+  if(player.dir == 1) { tmpPos[1] -= 2; }
+  if(player.dir == 2) { tmpPos[0] += 2; }
+  if(player.dir == 3) { tmpPos[1] += 2; }
+  if(player.dir == 4) { tmpPos[0] -= 2; }
+  if (!overlapsBlock(tmpPos,player.playerid)) {
     player.x = tmpPos[0];
     player.y = tmpPos[1];
   }
@@ -246,14 +287,10 @@ const recFire = (x, y, [xmod, ymod], stepsLeft) => {
 }
 
 const checkForDeath = (player) => {
-  let x = player.x;
-  let y = player.y;
-
-  const pts = [[x+5,y+5],[x+35,y+5], [x+5, y+35], [x+35, y+35]];
-  for (const p of pts) {
-    const grid = toGrid(p[0], p[1]);
+pts = [[(x=player.x)+5,(y=player.y)+5],[x+35,y+5], [x+5, y+35], [x+35, y+35]];
+for (const p of pts) {
     for (const f of fire) {
-      if (grid[0] == f[0] && grid [1] == f[1]) {
+      if ((grid = toGrid(p[0], p[1]))[0] == f[0] && grid [1] == f[1]) {
         player.dead = true;
         crosses.push([grid[0], grid[1]]);
         return;
@@ -280,7 +317,6 @@ const step = (t) => {
   if ( P.filter(p=>!p.dead).length == 1) {
     winningPlayer = P.find(p=>!p.dead).playerid;
   }
-  requestAnimationFrame(step);
-  draw();
-};
-requestAnimationFrame(step);
+RA(step)
+Dr()};
+(RA=requestAnimationFrame)(step);

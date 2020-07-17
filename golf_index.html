@@ -215,7 +215,8 @@ D.addEventListener('keyup', (e) => {
 
 // Player 2
 D.addEventListener('keydown', (e) => {
-  const player = players[1];
+  const playerid = 1;
+  const player = players[playerid];
   if (player.dead) {
     return;
   }
@@ -233,7 +234,10 @@ D.addEventListener('keydown', (e) => {
       player.dir = 4;
       break;
     case 'Backquote':
-      bombs.push([align(player.x)/40, align(player.y)/40, Date.now()+BOMB_TIME, player.reach, 1]);
+      curbombs = bombs.filter((b)  => b[4] == playerid).length;
+      if (curbombs < player.maxbomb) {
+        bombs.push([align(player.x)/40, align(player.y)/40, Date.now()+BOMB_TIME, player.reach, playerid]);
+      }
       break;
   }});
 D.addEventListener('keyup', (e) => {

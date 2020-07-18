@@ -28,10 +28,18 @@ winningPlayer=undefined;
 bombs = []
 fire = []
 crosses = []
-powerups = [[1,2,0],[2,1,1]]
+powerups = []
 B=[];for (y=0;y<13;y++){r=[];for(x=0;x<15;x++)r.push(!x|!y|y==12|x==14|(x%2==0&y%2==0)?'#':'x');B.push(r);}B[11][12]=B[10][13]=B[11][13]=B[1][2]=B[1][1]=B[2][1]='.'
-for(i=0;i<30;i++){nx=(MR=(M=Math).random)()*15|0,ny=MR()*13|0
-  if (B[ny][nx] != '#')powerups.push([nx,ny,i%2])}P=[new Player(40,40,1),new Player(40*13,40*11,2)]
+for(i=0;i<45;i++){nx=(MR=(M=Math).random)()*15|0,ny=MR()*13|0
+  if (B[ny][nx] != '#'){
+    if (i%4>2) {
+      powerups.push([nx,ny,i%2])
+    }else {
+      B[ny][nx]='.';
+    }
+  }
+}
+P=[new Player(40,40,1),new Player(40*13,40*11,2)]
 D=document
 C=D[Q='querySelector']('canvas').getContext('2d')
 align=val=>Math.round(val/40)*40
@@ -173,10 +181,7 @@ paintTile= (sheet, x, y, tile, frame=0, mod=0) => {
     sx={0:408,1:425,2:442,3:459}[frame];
     sy=0
   }
-  if (tile == 'death') {
-  } else {
-    C.drawImage(sheet, sx, sy, 16, 16, x+mod, y+mod, 40-2*mod, 40-2*mod);
-  }
+  C.drawImage(sheet, sx, sy, 16, 16, x+mod, y+mod, 40-2*mod, 40-2*mod);
 }
 
 const Dr=()=>{

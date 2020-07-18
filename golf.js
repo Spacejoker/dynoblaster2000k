@@ -5,7 +5,7 @@ s1.src='img/playersprite.png'
 bgsheet=new Image()
 bgsheet.src='img/13.png'
 lt=0
-winningPlayer=undefined
+W=undefined
 bombs=[]
 fire=[]
 crosses=[]
@@ -47,46 +47,34 @@ case d:P[p].dir=c==3?0:c;break
 case l:P[p].dir=c==4?0:c;break}})}
 addListener('ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Space',0)
 addListener('KeyW','KeyD','KeyS','KeyA','Backquote',1)
-PT=(s,x,y,t,f=0,m=0)=>{[u,v]={'bombpower':[544,17],'rangepower':[561,17],'grass':[254,17],'wall':[663,0],'fire':{0:[408,0],1:[425,0],2:[442,0],3:[459,0]}[f],'bomb':{0:[612,0],1:[629,0],2:[646,0]}[f]}[t]||[493,0];
+PT=(s,x,y,t,f=0,m=0)=>{[u,v]={'b':[544,17],'r':[561,17],'g':[254,17],'w':[663,0],'f':{0:[408,0],1:[425,0],2:[442,0],3:[459,0]}[f],'B':{0:[612,0],1:[629,0],2:[646,0]}[f]}[t]||[493,0];
 C.drawImage(s,u,v,16,16,x+m,y+m,40-m-m,40-m-m)}
 DR=()=>{
-for(x=0;x<15;x++)for(y=0;y<13;y++)if(B[y][x]==='#')PT(bgsheet,x*40,y*40,'wall',0,0)
-else if(B[y][x]==='x')PT(bgsheet,x*40,y*40,'stone',0,0)
-else PT(bgsheet,x*40,y*40,'grass')
-GS=p=>{d=p.dir
-frame={0:-1,1:9,2:3,3:0,4:6}[d]
-let r = p.l;
-if (frame >= 0) {
-if (p.l != frame) {
-p.t = Date.now();
-}
-p.l = frame;
-r = p.l + {0:0,1:1,2:0,3:2}[(((Date.now() - p.t)/200)%4)|0]
-} 
-return [p.p-1,r]
-};
-
+for(x=0;x<15;x++)for(y=0;y<13;y++)if(B[y][x]==='#')PT(bgsheet,x*40,y*40,'w',0,0)
+else if(B[y][x]==='x')PT(bgsheet,x*40,y*40,0,0,0)
+else PT(bgsheet,x*40,y*40,'g')
 drawItems(bombs);
 for (const p of P) {
 if (p.dead !== true) {
-[sx, sy] = GS(p);
-C.drawImage(s1, sx*24, sy*24, 24, 24, p.x, p.y, 40, 40);
-}
-}
-if (winningPlayer) {
-C.fillStyle='#fff';
-C.font = '64px serif';
-C.fillText(`Player ${winningPlayer} won!`, 120, 250);
-C.strokeText(`Player ${winningPlayer} won!`, 120, 250);
-}
-};
+d=p.dir
+f={0:-1,1:9,2:3,3:0,4:6}[d]
+r=p.l;
+if(f>=0){
+if(p.l!=f)p.t=Date.now()
+p.l=f
+r=p.l+{0:0,1:1,2:0,3:2}[(((Date.now()-p.t)/200)%4)|0]}
+C.drawImage(s1,(p.p-1)*24,r*24,24,24,p.x,p.y,40,40)}}
+if(W){C.fillStyle='#fff'
+C.font='64pxserif'
+C.fillText(`Player${W}won!`,120,250)
+C.strokeText(`Player${W}won!`,120,250)}}
 
 const drawItems = (bombs)  => {
 for (const b of bombs) {
-PT(bgsheet, b[0]*40, b[1]*40, 'bomb', ((Date.now()/150)%3)|0, 1);
+PT(bgsheet, b[0]*40, b[1]*40, 'B', ((Date.now()/150)%3)|0, 1);
 }
 for (const f of fire) {
-PT(bgsheet, f[0]*40, f[1]*40, 'fire', (((500-(f[2]-Date.now()))/130)%4)|0, 0);
+PT(bgsheet, f[0]*40, f[1]*40, 'f', (((500-(f[2]-Date.now()))/130)%4)|0, 0);
 }
 for (const  c of crosses) {
 timePassed = Date.now() - c[2];
@@ -100,9 +88,9 @@ break;
 for (const rp of powerups) {
 if (B[rp[1]][rp[0]] == '.') {
 if (rp[2] == 1) {
-PT(bgsheet, rp[0]*40, rp[1]*40, 'rangepower', 0, 1);
+PT(bgsheet, rp[0]*40, rp[1]*40, 'r', 0, 1);
 } else {
-PT(bgsheet, rp[0]*40, rp[1]*40, 'bombpower',0,1);
+PT(bgsheet, rp[0]*40, rp[1]*40, 'b',0,1);
 }
 }
 }
@@ -189,7 +177,7 @@ return;
 };
 
 const step = (t) => {
-if(!winningPlayer&&t-lt>16)for (i=0;i<P.length;updatePlayer(P[i]),FA(P[i]),i++)lt=t
+if(!W&&t-lt>16)for (i=0;i<P.length;updatePlayer(P[i]),FA(P[i]),i++)lt=t
 const now = Date.now();
 for (const b of bombs) {
 for (const f of fire) {
@@ -227,7 +215,7 @@ free = false;
 if(free)b[5] = false;
 }
 for(p of P)checkForDeath(p)
-if(P.filter(p=>!p.dead).length==1)winningPlayer=P.find(p=>!p.dead).p
+if(P.filter(p=>!p.dead).length==1)W=P.find(p=>!p.dead).p
 RA(step)
 DR()};
 (RA=requestAnimationFrame)(step);

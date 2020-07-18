@@ -1,10 +1,10 @@
 class Player{constructor(x, y,playerid){this.x=x
-this.y=y
-this.m=1
-this.r=2
-this.playerid=playerid
-this.lastframe=0
-this.timer=0;
+  this.y=y
+  this.m=1
+  this.r=2
+  this.playerid=playerid
+  this.lastframe=0
+  this.timer=0;
 }pos=()=>[this.x, this.y]}
 Ib=new Image();
 Ib.src='img/bomb.png';
@@ -20,16 +20,18 @@ rangePowerup=new Image();
 rangePowerup.src='img/range_powerup.png';
 spritesheet = new Image();
 spritesheet.src='img/playersprite.png';
+bgsheet = new Image();
+bgsheet.src='img/13.png';
 
 lastTick = 0;
 winningPlayer=undefined;
 bombs = []
 fire = []
 crosses = []
-rangePowerups = [[1,2,0],[2,1,1]]
+powerups = [[1,2,0],[2,1,1]]
 B=[];for (y=0;y<13;y++){r=[];for(x=0;x<15;x++)r.push(!x|!y|y==12|x==14|(x%2==0&y%2==0)?'#':'x');B.push(r);}B[11][12]=B[10][13]=B[11][13]=B[1][2]=B[1][1]=B[2][1]='.'
 for(i=0;i<30;i++){nx=(MR=(M=Math).random)()*15|0,ny=MR()*13|0
-if (B[ny][nx] != '#')rangePowerups.push([nx,ny,i%2])}P=[new Player(40,40,1),new Player(40*13,40*11,2)]
+  if (B[ny][nx] != '#')powerups.push([nx,ny,i%2])}P=[new Player(40,40,1),new Player(40*13,40*11,2)]
 D=document
 C=D[Q='querySelector']('canvas').getContext('2d')
 align=val=>Math.round(val/40)*40
@@ -94,10 +96,10 @@ const checkItems = () => {
   bombs = bombs.filter((b) => now < b[2]);
   fire = fire.filter((f) => now < f[2]);
   for (const player of P) {
-    for (let i = 0; i < rangePowerups.length; i++) {
-      const p = rangePowerups[i];
+    for (let i = 0; i < powerups.length; i++) {
+      const p = powerups[i];
       if (collides(player, p)) {
-        rangePowerups.splice(i, 1);
+        powerups.splice(i, 1);
         if (p[2] == 1) {
           player.r += 1;
         } else {
@@ -123,100 +125,131 @@ const getFireOpacity = (timestamp) => {
 };
 
 addListener=(u,r,d,l,space,p)=>{
-(ae=D.addEventListener)('keydown',e=>{q=P[p]
-if (q.dead)return
-switch(e.code){case u:q.dir=1;break
-case r:q.dir=2;break
-case d:q.dir=3;break
-case l:q.dir=4;break
-case space:curbombs=bombs.filter(b=>b[4]==p).length
-if(curbombs<q.m)bombs.push([align(q.x)/40, align(q.y)/40, Date.now()+2000, q.r, p, true])}})
-ae('keyup',e=>{c=P[p].dir
-switch(e.code){case u:P[p].dir=c==1?0:c;break
-case r:P[p].dir=c==2?0:c;break
-case d:P[p].dir=c==3?0:c;break
-case l:P[p].dir=c==4?0:c;break}})}
+  (ae=D.addEventListener)('keydown',e=>{q=P[p]
+    if (q.dead)return
+    switch(e.code){case u:q.dir=1;break
+      case r:q.dir=2;break
+      case d:q.dir=3;break
+      case l:q.dir=4;break
+      case space:curbombs=bombs.filter(b=>b[4]==p).length
+        if(curbombs<q.m)bombs.push([align(q.x)/40, align(q.y)/40, Date.now()+2000, q.r, p, true])}})
+  ae('keyup',e=>{c=P[p].dir
+    switch(e.code){case u:P[p].dir=c==1?0:c;break
+      case r:P[p].dir=c==2?0:c;break
+      case d:P[p].dir=c==3?0:c;break
+      case l:P[p].dir=c==4?0:c;break}})}
 addListener( 'ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'Space', 0);
 addListener( 'KeyW', 'KeyD', 'KeyS', 'KeyA', 'Backquote', 1);
 
-const Dr=()=>{
-C.fillStyle='#FFF';
-C.fillRect(0,0,600,520);
-C.fillStyle='#bbb';
-for (x = 0; x < 15; x++){
-for (y = 0; y < 13; y++) {
-if (B[y][x] === '#') {
-paintSquare(x*40, y*40, '#bbb');
-} else if (B[y][x] === 'x') {
-paintSquare(x*40, y*40, '#cfa');
-} else {
-paintSquare(x*40, y*40, '#0b0');
-}
-}
-}
-
-getSprite=(p) => {
-  const d = p.dir;
-  frame={
-    0:-1,
-    1:9,
-    2:3,
-    3:0,
-    4:6,
-  }[d];
-
-  let renderFrame = p.lastframe;
-  if (frame >= 0) {
-    if (p.lastframe != frame) {
-      p.timer = Date.now();
+paintTile= (sheet, x, y, tile, frame=0, mod=0) => {
+  let sx = 493;
+  let sy = 0;
+  if (tile == 'bombpower') {
+    sx = 544;
+    sy = 17;
+  }
+  if (tile == 'rangepower') {
+    sx = 561;
+    sy = 17;
+  }
+  if (tile == 'bomb') {
+    sx = 612
+    if (frame == 1) {
+      sx = 629
     }
-    p.lastframe = frame;
-    delta = (((Date.now() - p.timer)/200)%4);
-    delta = {0:0,1:1,2:0,3:2}[delta|0]
-    console.log('delta', delta);
-    renderFrame = p.lastframe + delta
+    if (frame == 2) {
+      sx = 646
+    }
+  }
+  if (tile == 'grass') {
+    sx=254
+    sy=17
+  }
 
-    console.log(renderFrame);
-  } 
-  return [p.playerid-1,renderFrame|0]
-};
+  if (tile == 'wall') {
+    sx=663
+  }
+  if (tile=='fire') {
+    sx={0:408,1:425,2:442,3:459}[frame];
+    sy=0
+  }
+  if (tile == 'death') {
+  } else {
+    C.drawImage(sheet, sx, sy, 16, 16, x+mod, y+mod, 40-2*mod, 40-2*mod);
+  }
+}
 
-drawItems(bombs);
-for (const p of P) {
-if (p.dead !== true) {
-  [sx, sy] = getSprite(p);
-  C.drawImage(spritesheet, sx*24, sy*24, 24, 24, p.x, p.y, 40, 40);
-}
-}
-if (winningPlayer) {
-C.fillStyle='#000';
-C.font = '48px serif';
-C.fillText(`Player ${winningPlayer} won!`, 160, 250);
-}
+const Dr=()=>{
+  C.fillStyle='#009100';
+  C.fillRect(0,0,600,520);
+  C.fillStyle='#bbb';
+  for (x = 0; x < 15; x++){
+    for (y = 0; y < 13; y++) {
+      if (B[y][x] === '#') {
+        paintTile(bgsheet, x*40, y*40, 'wall',0,0);
+      } else if (B[y][x] === 'x') {
+        paintTile(bgsheet, x*40, y*40, 'stone',0,0);
+      } else {
+        paintTile(bgsheet, x*40, y*40, 'grass');
+      }
+    }
+  }
+
+  getSprite=(p) => {
+    const d = p.dir;
+    frame={ 0:-1, 1:9, 2:3, 3:0, 4:6, }[d];
+
+    let renderFrame = p.lastframe;
+    if (frame >= 0) {
+      if (p.lastframe != frame) {
+        p.timer = Date.now();
+      }
+      p.lastframe = frame;
+      renderFrame = p.lastframe + {0:0,1:1,2:0,3:2}[(((Date.now() - p.timer)/200)%4)|0]
+    } 
+    return [p.playerid-1,renderFrame]
+  };
+
+  drawItems(bombs);
+  for (const p of P) {
+    if (p.dead !== true) {
+      [sx, sy] = getSprite(p);
+      C.drawImage(spritesheet, sx*24, sy*24, 24, 24, p.x, p.y, 40, 40);
+    }
+  }
+  if (winningPlayer) {
+    C.fillStyle='#fff';
+    C.font = '64px serif';
+    C.fillText(`Player ${winningPlayer} won!`, 120, 250);
+    C.strokeText(`Player ${winningPlayer} won!`, 120, 250);
+  }
 };
 
 const drawItems = (bombs)  => {
   for (const b of bombs) {
-    C.drawImage(Ib, b[0]*40, b[1]*40);
+    paintTile(bgsheet, b[0]*40, b[1]*40, 'bomb', ((Date.now()/150)%3)|0, 1);
   }
   for (const f of fire) {
-    C.save();
-    C.globalAlpha = getFireOpacity(f[2]);
-    C.drawImage(If, f[0]*40, f[1]*40);
-    C.restore();
+    paintTile(bgsheet, f[0]*40, f[1]*40, 'fire', (((500-(f[2]-Date.now()))/130)%4)|0, 0);
   }
   for (const  c of crosses) {
-    C.drawImage(crossImg, c[0]*40, c[1]*40);
+    timePassed = Date.now() - c[2];
+    frame = (timePassed/300)|0
+    frame+=12
+    if (frame < 20) {
+      C.drawImage(spritesheet, (c[3]-1)*24, frame*24, 24, 24, c[0]*40, c[1]*40, 40, 40);
+    }
+    break;
   }
-for (const rp of rangePowerups) {
-if (B[rp[1]][rp[0]] == '.') {
-if (rp[2] == 1) {
-C.drawImage(rangePowerup, rp[0]*40, rp[1]*40);
-} else {
-C.drawImage(bombPowerup, rp[0]*40, rp[1]*40);
-}
-}
-}
+  for (const rp of powerups) {
+    if (B[rp[1]][rp[0]] == '.') {
+      if (rp[2] == 1) {
+        paintTile(bgsheet, rp[0]*40, rp[1]*40, 'rangepower', 0, 1);
+      } else {
+        paintTile(bgsheet, rp[0]*40, rp[1]*40, 'bombpower',0,1);
+      }
+    }
+  }
 };
 
 const collides = (player, [x2, y2]) => {
@@ -287,12 +320,12 @@ const recFire = (x, y, [xmod, ymod], stepsLeft) => {
 }
 
 const checkForDeath = (player) => {
-pts = [[(x=player.x)+5,(y=player.y)+5],[x+35,y+5], [x+5, y+35], [x+35, y+35]];
-for (const p of pts) {
+  pts = [[(x=player.x)+5,(y=player.y)+5],[x+35,y+5], [x+5, y+35], [x+35, y+35]];
+  for (const p of pts) {
     for (const f of fire) {
       if ((grid = toGrid(p[0], p[1]))[0] == f[0] && grid [1] == f[1]) {
         player.dead = true;
-        crosses.push([grid[0], grid[1]]);
+        crosses.push([grid[0], grid[1], Date.now(), player.playerid]);
         return;
       }
     }
@@ -309,14 +342,14 @@ const step = (t) => {
       }
       lastTick = t;
     }
-    checkItems();
-    for (const p of P) {
-      checkForDeath(p);
-    }
+  }
+  checkItems();
+  for (const p of P) {
+    checkForDeath(p);
   }
   if ( P.filter(p=>!p.dead).length == 1) {
     winningPlayer = P.find(p=>!p.dead).playerid;
   }
-RA(step)
-Dr()};
+  RA(step)
+  Dr()};
 (RA=requestAnimationFrame)(step);

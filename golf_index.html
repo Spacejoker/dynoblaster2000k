@@ -1,2 +1,27 @@
-<canvas id="stage" width="600" height="520" style="border:1px solid grey;"></canvas>
-<script src="golf.js"></script>
+<style>
+  .main {
+    background-color: black;
+    display: flex;
+    justify-content: center;
+      align-items: center;
+    height: 102vh;
+    width: 102vw;
+    overflow: hidden;
+  }
+  .wrap {
+    border: thick double #32a1ce;
+    width: 602px;
+    height: 522px;
+  }
+  body {
+    overflow: hidden;
+  }
+</style>
+<body>
+  <div class="main">
+    <div class="wrap">
+      <canvas id="stage" width="600" height="520" style="border:1px solid grey;"></canvas>
+    </div>
+  </div>
+  <script src="golf.js"></script>
+</body>

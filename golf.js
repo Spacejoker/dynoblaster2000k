@@ -1,4 +1,4 @@
-class Player{constructor(x, y,playerid){let t=this;t.x=x;t.y=y;t.m=1;t.r=2;t.playerid=playerid;t.lastframe=0;t.timer=0
+class Player{constructor(x, y,p){let t=this;t.x=x;t.y=y;t.m=1;t.r=2;t.p=p;t.l=0;t.t=0
 }pos=()=>[this.x, this.y]}
 s1=new Image()
 s1.src='img/playersprite.png'
@@ -47,77 +47,29 @@ case d:P[p].dir=c==3?0:c;break
 case l:P[p].dir=c==4?0:c;break}})}
 addListener('ArrowUp','ArrowRight','ArrowDown','ArrowLeft','Space',0)
 addListener('KeyW','KeyD','KeyS','KeyA','Backquote',1)
-
-paintTile= (sheet, x, y, tile, frame=0, mod=0) => {
-let sx = 493;
-let sy = 0;
-if (tile == 'bombpower') {
-sx = 544;
-sy = 17;
-}
-if (tile == 'rangepower') {
-sx = 561;
-sy = 17;
-}
-if (tile == 'bomb') {
-sx = 612
-if (frame == 1) {
-sx = 629
-}
-if (frame == 2) {
-sx = 646
-}
-}
-if (tile == 'grass') {
-sx=254
-sy=17
-}
-
-if (tile == 'wall') {
-sx=663
-}
-if (tile=='fire') {
-sx={0:408,1:425,2:442,3:459}[frame];
-sy=0
-}
-C.drawImage(sheet, sx, sy, 16, 16, x+mod, y+mod, 40-2*mod, 40-2*mod);
-}
-
-const Dr=()=>{
-C.fillStyle='#009100';
-C.fillRect(0,0,600,520);
-C.fillStyle='#bbb';
-for (x = 0; x < 15; x++){
-for (y = 0; y < 13; y++) {
-if (B[y][x] === '#') {
-paintTile(bgsheet, x*40, y*40, 'wall',0,0);
-} else if (B[y][x] === 'x') {
-paintTile(bgsheet, x*40, y*40, 'stone',0,0);
-} else {
-paintTile(bgsheet, x*40, y*40, 'grass');
-}
-}
-}
-
-getSprite=(p) => {
-const d = p.dir;
-frame={ 0:-1, 1:9, 2:3, 3:0, 4:6, }[d];
-
-let renderFrame = p.lastframe;
+PT=(s,x,y,t,f=0,m=0)=>{[u,v]={'bombpower':[544,17],'rangepower':[561,17],'grass':[254,17],'wall':[663,0],'fire':{0:[408,0],1:[425,0],2:[442,0],3:[459,0]}[f],'bomb':{0:[612,0],1:[629,0],2:[646,0]}[f]}[t]||[493,0];
+C.drawImage(s,u,v,16,16,x+m,y+m,40-m-m,40-m-m)}
+DR=()=>{
+for(x=0;x<15;x++)for(y=0;y<13;y++)if(B[y][x]==='#')PT(bgsheet,x*40,y*40,'wall',0,0)
+else if(B[y][x]==='x')PT(bgsheet,x*40,y*40,'stone',0,0)
+else PT(bgsheet,x*40,y*40,'grass')
+GS=p=>{d=p.dir
+frame={0:-1,1:9,2:3,3:0,4:6}[d]
+let r = p.l;
 if (frame >= 0) {
-if (p.lastframe != frame) {
-p.timer = Date.now();
+if (p.l != frame) {
+p.t = Date.now();
 }
-p.lastframe = frame;
-renderFrame = p.lastframe + {0:0,1:1,2:0,3:2}[(((Date.now() - p.timer)/200)%4)|0]
+p.l = frame;
+r = p.l + {0:0,1:1,2:0,3:2}[(((Date.now() - p.t)/200)%4)|0]
 } 
-return [p.playerid-1,renderFrame]
+return [p.p-1,r]
 };
 
 drawItems(bombs);
 for (const p of P) {
 if (p.dead !== true) {
-[sx, sy] = getSprite(p);
+[sx, sy] = GS(p);
 C.drawImage(s1, sx*24, sy*24, 24, 24, p.x, p.y, 40, 40);
 }
 }
@@ -131,10 +83,10 @@ C.strokeText(`Player ${winningPlayer} won!`, 120, 250);
 
 const drawItems = (bombs)  => {
 for (const b of bombs) {
-paintTile(bgsheet, b[0]*40, b[1]*40, 'bomb', ((Date.now()/150)%3)|0, 1);
+PT(bgsheet, b[0]*40, b[1]*40, 'bomb', ((Date.now()/150)%3)|0, 1);
 }
 for (const f of fire) {
-paintTile(bgsheet, f[0]*40, f[1]*40, 'fire', (((500-(f[2]-Date.now()))/130)%4)|0, 0);
+PT(bgsheet, f[0]*40, f[1]*40, 'fire', (((500-(f[2]-Date.now()))/130)%4)|0, 0);
 }
 for (const  c of crosses) {
 timePassed = Date.now() - c[2];
@@ -148,9 +100,9 @@ break;
 for (const rp of powerups) {
 if (B[rp[1]][rp[0]] == '.') {
 if (rp[2] == 1) {
-paintTile(bgsheet, rp[0]*40, rp[1]*40, 'rangepower', 0, 1);
+PT(bgsheet, rp[0]*40, rp[1]*40, 'rangepower', 0, 1);
 } else {
-paintTile(bgsheet, rp[0]*40, rp[1]*40, 'bombpower',0,1);
+PT(bgsheet, rp[0]*40, rp[1]*40, 'bombpower',0,1);
 }
 }
 }
@@ -198,7 +150,7 @@ if(player.dir == 1) { tmpPos[1] -= 2; }
 if(player.dir == 2) { tmpPos[0] += 2; }
 if(player.dir == 3) { tmpPos[1] += 2; }
 if(player.dir == 4) { tmpPos[0] -= 2; }
-if (!overlapsBlock(tmpPos,player.playerid)) {
+if (!overlapsBlock(tmpPos,player.p)) {
 player.x = tmpPos[0];
 player.y = tmpPos[1];
 }
@@ -229,7 +181,7 @@ for (const p of pts) {
 for (const f of fire) {
 if ((x1=M.floor(p[0]/40))== f[0] && (x2=M.floor(p[1]/40))== f[1]) {
 player.dead = true;
-crosses.push([x1, x2,Date.now(), player.playerid]);
+crosses.push([x1, x2,Date.now(), player.p]);
 return;
 }
 }
@@ -275,8 +227,8 @@ free = false;
 if(free)b[5] = false;
 }
 for(p of P)checkForDeath(p)
-if(P.filter(p=>!p.dead).length==1)winningPlayer=P.find(p=>!p.dead).playerid
+if(P.filter(p=>!p.dead).length==1)winningPlayer=P.find(p=>!p.dead).p
 RA(step)
-Dr()};
+DR()};
 (RA=requestAnimationFrame)(step);
 

@@ -1,9 +1,9 @@
 class Player{constructor(x, y,p){let t=this;t.x=x;t.y=y;t.m=1;t.r=2;t.p=p;t.l=0;t.t=0
 }pos=()=>[this.x, this.y]}
 s1=new Image()
-s1.src='img/playersprite.png'
+s1.src='img/player.png'
 bgsheet=new Image()
-bgsheet.src='img/13.png'
+bgsheet.src='img/items.png'
 lt=0
 W=undefined
 bombs=[]
